@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+  <title>The time of life</title>
+  <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M22.5 12c0-5.796-4.704-10.5-10.5-10.5S1.5 6.204 1.5 12 6.204 22.5 12 22.5 22.5 17.796 22.5 12zm-11.207 0l4.243-4.243.707.707L12 12.707 11.293 12z' fill='%23232323' stroke='%23fff'/%3E%3C/svg%3E" />
+  <link href="./lib/flip/flip.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: #2a2a2a;
+      user-select: none;
+    }
+
+    .container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-image: url("./bg.svg");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+    }
+
+    .title {
+      margin-bottom: 20px;
+      text-align: center;
+      color: lightgray;
+      text-shadow: 0 0 4px #2a2a2a;
+    }
+
+    .tick {
+      text-align: center;
+    }
+
+    .tick.up {
+      font-size: 48px;
+    }
+
+    .tick.down {
+      margin-top: 16px;
+      font-size: 24px;
+    }
+
+    .sub-title {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: lightgray;
+      text-shadow: 0 0 4px #2a2a2a;
+    }
+
+    .months-grid-list {
+      display: flex;
+      flex-wrap: wrap;
+      width: 300px;
+      height: 400px;
+    }
+
+    .months-grid-list .grid {
+      box-sizing: border-box;
+      margin: 1px;
+      border: 1px solid #363636;
+      border-radius: 2px;
+      width: 8px;
+      height: 8px;
+      background-color: #2a2a2acc;
+    }
+
+    .months-grid-list .grid.used {
+      border-color: greenyellow;
+      background-color: green;
+      box-shadow: 0 0 2px yellowgreen;
+    }
+
+    .tick-credits {
+      display: none;
+    }
+
+    .website {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #565656;
+      text-decoration: none;
+      text-shadow: 0 0 2px #2a2a2a;
+    }
+
+    @media (min-width: 640px) {
+      .months-grid-list {
+        width: 400px;
+        height: 300px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <h2 class="title"><code>THE TIME OF LIFE</code></h2>
+
+    <code>
+      <div
+        class="tick up"
+        data-value="---"
+        data-did-init="setupUpFlip"
+      >
+        <div data-repeat="true" aria-hidden="true">
+          <span data-view="flip"></span>
+        </div>
+      </div>
+
+      <div
+        class="tick down"
+        data-value="--------"
+        data-did-init="setupDownFlip"
+      >
+        <div data-repeat="true" aria-hidden="true">
+          <span data-view="flip"></span>
+        </div>
+      </div>
+    </code>
+
+    <h3 class="sub-title"><code>MONTHS THAT HAVE PASSED</code></h3>
+
+    <div class="months-grid-list"></div>
+
+  </div>
+
+  <code class="website">QIUSHUTONG.COM</code>
+
+</body>
+<script src="./lib/flip/flip.min.js"></script>
+<script src="./lib/luxon.min.js"></script>
+<script>
+
+const { DateTime, Interval } = luxon
+
+const getDurationObject = () => {
+  const start = luxon.DateTime.fromISO('2021-01-14T23:52')
+  const end = luxon.DateTime.fromISO(new Date().toISOString())
+  const interval = luxon.Interval.fromDateTimes(start, end)
+
+  return interval
+    .toDuration(['years', 'months', 'days', 'hours', 'minutes', 'seconds', 'milliseconds'])
+    .toObject()
+}
+
+function setupUpFlip(tick) {
+  Tick.helper.interval(function() {
+    const { years, months, days } = getDurationObject()
+
+    tick.value = [years, months, days]
+      .map((number, numberIndex) => {
+        const suffix = ['Y', 'M', 'D'][numberIndex]
+        return number + suffix
+      })
+
+    const monthCount = years * 24 + months
+
+    document.querySelectorAll('.months-grid-list .grid')
+      .forEach((grid, gridIndex) => {
+        if (gridIndex <= monthCount) {
+          grid.classList.add('used')
+
+          if (gridIndex === monthCount) {
+            grid.style = `opacity: ${days / 30};`
+          }
+        }
+      })
+
+  }, 1000)
+}
+
+function setupDownFlip(tick) {
+  Tick.helper.interval(function() {
+    const { hours, minutes, seconds } = getDurationObject()
+
+    tick.value = [hours, minutes, seconds]
+      .map(n => String(n).padStart(2, 0))
+      .join(':')
+
+  }, 1000)
+}
+
+const gridList = document.querySelector('.months-grid-list')
+
+Array.from('*'.repeat(1200)).forEach((_, index) => {
+  const grid = document.createElement('div')
+  grid.className = 'grid'
+  gridList.appendChild(grid)
+})
+
+</script>
+</html>
